@@ -8,7 +8,9 @@ from flask import Flask, render_template, jsonify, request
 from storage.database import (
     init_db, get_notices, get_notice_with_attachments,
     count_notices, get_unread_alerts, mark_alerts_read, add_alert,
-    upsert_notice, save_attachment
+    upsert_notice, save_attachment,
+    get_verification_with_modules, update_verification, upsert_module_check,
+    get_dashboard_stats, VERIFICATION_STATUSES, VERIFICATION_PRIORITIES, EMR_MODULES
 )
 
 
@@ -90,11 +92,15 @@ def create_app():
             has_summary = True
         elif has_summary_param == 'false':
             has_summary = False
+        v_status   = request.args.get('v_status') or None
+        v_priority = request.args.get('v_priority') or None
 
         offset = (page - 1) * page_size
-        total  = count_notices(source=source, from_date=from_date, has_summary=has_summary)
+        total  = count_notices(source=source, from_date=from_date, has_summary=has_summary,
+                               v_status=v_status, v_priority=v_priority)
         notices = get_notices(source=source, from_date=from_date,
-                              limit=page_size, offset=offset, has_summary=has_summary)
+                              limit=page_size, offset=offset, has_summary=has_summary,
+                              v_status=v_status, v_priority=v_priority)
         pages  = max(1, math.ceil(total / page_size))
 
         return jsonify({'notices': notices, 'total': total,
@@ -102,7 +108,38 @@ def create_app():
 
     @app.route('/api/notices/<int:notice_id>')
     def api_notice_detail(notice_id):
-        return jsonify(get_notice_with_attachments(notice_id))
+        data = get_notice_with_attachments(notice_id)
+        data['verification'] = get_verification_with_modules(notice_id)
+        return jsonify(data)
+
+    @app.route('/api/notices/<int:notice_id>/verification', methods=['GET'])
+    def api_get_verification(notice_id):
+        return jsonify(get_verification_with_modules(notice_id))
+
+    @app.route('/api/notices/<int:notice_id>/verification', methods=['PUT'])
+    def api_put_verification(notice_id):
+        body = request.get_json() or {}
+        status   = body.get('status')
+        priority = body.get('priority')
+        memo     = body.get('memo')
+        if status and status not in VERIFICATION_STATUSES:
+            return jsonify({'error': 'invalid status'}), 400
+        if priority and priority not in VERIFICATION_PRIORITIES:
+            return jsonify({'error': 'invalid priority'}), 400
+        update_verification(notice_id, status=status, priority=priority, memo=memo)
+        return jsonify({'ok': True})
+
+    @app.route('/api/notices/<int:notice_id>/modules', methods=['PATCH'])
+    def api_patch_modules(notice_id):
+        body = request.get_json() or {}
+        for module, checked in body.items():
+            if module in EMR_MODULES:
+                upsert_module_check(notice_id, module, checked)
+        return jsonify({'ok': True})
+
+    @app.route('/api/dashboard')
+    def api_dashboard():
+        return jsonify(get_dashboard_stats())
 
     @app.route('/api/alerts')
     def api_alerts():

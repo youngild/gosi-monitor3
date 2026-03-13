@@ -10,6 +10,8 @@
       --blue: #1a4c8b; --blue2: #15397a; --green: #197a4b;
       --orange: #b35c00; --red: #c0392b; --gray: #666;
       --bg: #f4f6fb; --border: #e0e4ec;
+      --urgent: #c0392b; --normal: #1a4c8b; --low: #666;
+      --pending: #888; --reviewing: #b35c00; --applied: #197a4b; --na: #aaa;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
@@ -67,6 +69,32 @@
     .alert-item .a-meta { font-size: 0.75rem; color: var(--gray); margin-top: 3px; }
     .alert-empty { padding: 24px; text-align: center; color: var(--gray); font-size: 0.85rem; }
 
+    /* ── 대시보드 패널 ── */
+    .dashboard-bar {
+      background: #fff; border-bottom: 2px solid var(--border);
+      padding: 10px 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    }
+    .dash-title {
+      font-size: 0.78rem; font-weight: 700; color: var(--gray); margin-right: 4px;
+    }
+    .dash-stat {
+      display: flex; align-items: center; gap: 5px;
+      background: #f5f7fc; border-radius: 6px; padding: 5px 12px;
+      font-size: 0.82rem; cursor: pointer; border: 1px solid var(--border);
+      transition: background .1s;
+    }
+    .dash-stat:hover { background: #e8edf8; }
+    .dash-stat .ds-label { color: var(--gray); }
+    .dash-stat .ds-count { font-weight: 700; font-size: 1rem; }
+    .dash-stat.urgent .ds-count { color: var(--urgent); }
+    .dash-stat.reviewing .ds-count { color: var(--reviewing); }
+    .dash-stat.applied .ds-count { color: var(--applied); }
+    .dash-stat.pending .ds-count { color: var(--pending); }
+    .dash-stat.na .ds-count { color: var(--na); }
+    .dash-stat.total .ds-count { color: var(--blue); }
+    .dash-reload { margin-left: auto; font-size: 0.78rem; color: var(--gray);
+                   background: none; border: none; cursor: pointer; }
+
     /* ── 툴바 ── */
     .toolbar {
       background: #fff; border-bottom: 1px solid var(--border);
@@ -77,7 +105,7 @@
       border: 1px solid #ccc; border-radius: 4px;
       padding: 5px 9px; font-size: 0.85rem; font-family: inherit;
     }
-    .toolbar input[type=text] { width: 180px; }
+    .toolbar input[type=text] { width: 160px; }
     .btn {
       border: none; border-radius: 4px; padding: 6px 13px;
       cursor: pointer; font-size: 0.83rem; font-family: inherit; font-weight: 600;
@@ -92,12 +120,13 @@
 
     /* 요약 필터 토글 */
     .summary-filter {
-      display: flex; gap: 4px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;
+      display: flex; gap: 0; border: 1px solid #ccc; border-radius: 4px; overflow: hidden;
     }
     .summary-filter button {
-      border: none; background: #f5f5f5; padding: 5px 10px;
-      font-size: 0.8rem; cursor: pointer; font-family: inherit;
+      border: none; border-right: 1px solid #ccc; background: #f5f5f5; padding: 5px 9px;
+      font-size: 0.78rem; cursor: pointer; font-family: inherit;
     }
+    .summary-filter button:last-child { border-right: none; }
     .summary-filter button.active { background: var(--blue); color: #fff; }
 
     .sep { width: 1px; height: 22px; background: var(--border); }
@@ -106,15 +135,27 @@
       border-radius: 12px; padding: 3px 10px; font-size: 0.78rem; font-weight: 700;
     }
 
+    /* ── 검증 상태/우선순위 태그 ── */
+    .v-tag {
+      display: inline-block; padding: 1px 6px; border-radius: 8px;
+      font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+    }
+    .v-pending   { background: #f0f0f0; color: #666; }
+    .v-reviewing { background: #fff3dc; color: var(--orange); }
+    .v-applied   { background: #ddf4ec; color: var(--green); }
+    .v-na        { background: #f5f5f5; color: #aaa; }
+    .v-urgent    { background: #fde8e6; color: var(--urgent); }
+    .v-normal    { background: #e8f0fe; color: var(--blue); }
+    .v-low       { background: #f5f5f5; color: var(--gray); }
+
     /* ── 테이블 ── */
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     thead { background: var(--blue); color: #fff; position: sticky; top: 0; z-index: 1; }
-    th, td { padding: 9px 12px; font-size: 0.83rem; text-align: left; }
+    th, td { padding: 9px 10px; font-size: 0.83rem; text-align: left; }
     th { font-weight: 600; white-space: nowrap; }
     tbody tr { border-bottom: 1px solid #f0f2f7; cursor: pointer; transition: background .1s; }
     tbody tr:hover { background: #f0f5ff; }
-    tbody tr.new-row { background: #fffbea; }
 
     .tag {
       display: inline-block; padding: 1px 7px; border-radius: 10px;
@@ -164,12 +205,12 @@
     .modal-bg.open { display: flex; }
     .modal {
       background: #fff; border-radius: 10px;
-      width: 720px; max-width: 95vw; max-height: 88vh;
+      width: 820px; max-width: 96vw; max-height: 92vh;
       display: flex; flex-direction: column;
       box-shadow: 0 8px 40px rgba(0,0,0,.2);
     }
     .modal-head {
-      padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+      padding: 16px 22px 12px; border-bottom: 1px solid var(--border);
       display: flex; align-items: flex-start; gap: 10px;
     }
     .modal-head .m-title {
@@ -189,12 +230,11 @@
     }
     .modal-meta a { color: var(--blue); font-size: 0.78rem; text-decoration: none; }
     .modal-meta a:hover { text-decoration: underline; }
-    .modal-body { flex: 1; overflow-y: auto; padding: 20px 22px; }
+    .modal-body { flex: 1; overflow-y: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
 
     /* 요약 카드 */
     .summary-card {
-      background: #f7faff;
-      border: 1px solid #c8d8f0;
+      background: #f7faff; border: 1px solid #c8d8f0;
       border-left: 4px solid var(--blue);
       border-radius: 6px; padding: 16px 18px;
       font-size: 0.87rem; line-height: 1.85;
@@ -204,23 +244,60 @@
     .no-sum-msg { color: var(--gray); font-size: 0.84rem; font-style: italic; }
 
     /* 첨부파일 */
-    .attach-section { margin-top: 16px; }
     .attach-section h4 {
       font-size: 0.8rem; color: var(--blue); font-weight: 700;
       border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 8px;
     }
     .attach-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-    .attach-list li a {
-      color: var(--blue); font-size: 0.82rem; text-decoration: none;
-    }
+    .attach-list li a { color: var(--blue); font-size: 0.82rem; text-decoration: none; }
     .attach-list li a:hover { text-decoration: underline; }
 
     /* 섹션 구분자 */
     .section-divider {
       font-size: 0.78rem; font-weight: 700; color: var(--blue);
       border-bottom: 1px solid #dde8f5; padding-bottom: 5px;
-      margin: 16px 0 10px;
+      margin-bottom: 10px;
     }
+
+    /* ── 검증 패널 ── */
+    .verify-panel {
+      background: #fffdf5; border: 1px solid #e8dfc0;
+      border-left: 4px solid var(--orange);
+      border-radius: 6px; padding: 14px 16px;
+    }
+    .verify-panel .vp-title {
+      font-size: 0.82rem; font-weight: 700; color: var(--orange);
+      margin-bottom: 12px;
+    }
+    .verify-row {
+      display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .verify-field { display: flex; flex-direction: column; gap: 4px; }
+    .verify-field label { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
+    .verify-field select {
+      border: 1px solid #ccc; border-radius: 4px;
+      padding: 5px 8px; font-size: 0.83rem; font-family: inherit; background: #fff;
+    }
+    .module-grid {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;
+    }
+    .module-chip {
+      display: flex; align-items: center; gap: 4px;
+      background: #f0f4f8; border: 1px solid #d0d8e8; border-radius: 5px;
+      padding: 4px 10px; cursor: pointer; font-size: 0.79rem; user-select: none;
+      transition: background .1s;
+    }
+    .module-chip input[type=checkbox] { margin: 0; width: 13px; height: 13px; cursor: pointer; }
+    .module-chip.checked { background: #ddf4ec; border-color: #aad8c0; color: var(--green); font-weight: 700; }
+    .memo-area {
+      width: 100%; min-height: 64px; border: 1px solid #ccc; border-radius: 4px;
+      padding: 7px 10px; font-size: 0.84rem; font-family: inherit; resize: vertical;
+      margin-bottom: 10px;
+    }
+    .memo-area:focus { outline: none; border-color: var(--blue); }
+    .vp-save-row { display: flex; gap: 8px; align-items: center; }
+    .vp-saved-msg { font-size: 0.78rem; color: var(--green); display: none; }
+    .vp-saved-msg.show { display: inline; }
   </style>
 </head>
 <body>
@@ -245,6 +322,36 @@
   </div>
 </header>
 
+<!-- ── 대시보드 ── -->
+<div class="dashboard-bar" id="dashboard-bar">
+  <span class="dash-title">검증 현황</span>
+  <div class="dash-stat urgent" title="긴급 미처리" onclick="setVFilter('v_priority','urgent')">
+    <span class="ds-label">🔴 긴급</span>
+    <span class="ds-count" id="ds-urgent">-</span>
+  </div>
+  <div class="dash-stat pending" title="검토 대기" onclick="setVFilter('v_status','pending')">
+    <span class="ds-label">⬜ 대기</span>
+    <span class="ds-count" id="ds-pending">-</span>
+  </div>
+  <div class="dash-stat reviewing" title="검토 중" onclick="setVFilter('v_status','reviewing')">
+    <span class="ds-label">🔶 검토중</span>
+    <span class="ds-count" id="ds-reviewing">-</span>
+  </div>
+  <div class="dash-stat applied" title="적용 완료" onclick="setVFilter('v_status','applied')">
+    <span class="ds-label">✅ 적용완료</span>
+    <span class="ds-count" id="ds-applied">-</span>
+  </div>
+  <div class="dash-stat na" title="해당 없음" onclick="setVFilter('v_status','na')">
+    <span class="ds-label">➖ 해당없음</span>
+    <span class="ds-count" id="ds-na">-</span>
+  </div>
+  <div class="dash-stat total" onclick="clearVFilters()">
+    <span class="ds-label">전체</span>
+    <span class="ds-count" id="ds-total">-</span>
+  </div>
+  <button class="dash-reload" onclick="loadDashboard()" title="새로고침">↺ 새로고침</button>
+</div>
+
 <div class="toolbar">
   <label>출처</label>
   <select id="filter-source">
@@ -259,10 +366,27 @@
   <input type="text" id="filter-keyword" placeholder="제목 검색...">
 
   <div class="summary-filter">
-    <button id="sf-all"    class="active" onclick="setSummaryFilter('')">전체</button>
-    <button id="sf-done"              onclick="setSummaryFilter('true')">요약완료</button>
-    <button id="sf-none"              onclick="setSummaryFilter('false')">미요약</button>
+    <button id="sf-all"  class="active" onclick="setSummaryFilter('')">전체</button>
+    <button id="sf-done"             onclick="setSummaryFilter('true')">요약완료</button>
+    <button id="sf-none"             onclick="setSummaryFilter('false')">미요약</button>
   </div>
+
+  <label>검증상태</label>
+  <select id="filter-vstatus" onchange="loadPage(1)">
+    <option value="">전체</option>
+    <option value="pending">대기</option>
+    <option value="reviewing">검토중</option>
+    <option value="applied">적용완료</option>
+    <option value="na">해당없음</option>
+  </select>
+
+  <label>우선순위</label>
+  <select id="filter-vpriority" onchange="loadPage(1)">
+    <option value="">전체</option>
+    <option value="urgent">긴급</option>
+    <option value="normal">보통</option>
+    <option value="low">낮음</option>
+  </select>
 
   <button class="btn btn-primary" onclick="loadPage(1)">검색</button>
   <div class="sep"></div>
@@ -275,15 +399,17 @@
   <table>
     <thead>
       <tr>
-        <th style="width:65px">출처</th>
-        <th style="width:72px">구분</th>
+        <th style="width:62px">출처</th>
+        <th style="width:70px">구분</th>
         <th>제목</th>
-        <th style="width:92px">등록일</th>
-        <th style="width:58px">요약</th>
+        <th style="width:90px">등록일</th>
+        <th style="width:54px">요약</th>
+        <th style="width:72px">검증상태</th>
+        <th style="width:60px">우선순위</th>
       </tr>
     </thead>
     <tbody id="notice-tbody">
-      <tr class="loading-row"><td colspan="5">데이터를 불러오는 중...</td></tr>
+      <tr class="loading-row"><td colspan="7">데이터를 불러오는 중...</td></tr>
     </tbody>
   </table>
 </div>
@@ -310,6 +436,39 @@
 let currentPage = 1;
 const PAGE_SIZE = 50;
 let summaryFilter = '';  // '' | 'true' | 'false'
+let currentNoticeId = null;
+
+const STATUS_LABELS = { pending:'대기', reviewing:'검토중', applied:'적용완료', na:'해당없음' };
+const PRIORITY_LABELS = { urgent:'긴급', normal:'보통', low:'낮음' };
+const MODULE_LABELS = {
+  billing:'청구/수납', prescription:'처방', emr_record:'의무기록',
+  payment:'수납', report:'신고/보고', ocs:'OCS', lab:'검사'
+};
+
+// ── 대시보드 ───────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard');
+    const d = await res.json();
+    document.getElementById('ds-urgent').textContent   = d.urgent    ?? 0;
+    document.getElementById('ds-pending').textContent  = d.pending   ?? 0;
+    document.getElementById('ds-reviewing').textContent = d.reviewing ?? 0;
+    document.getElementById('ds-applied').textContent  = d.applied   ?? 0;
+    document.getElementById('ds-na').textContent       = d.na        ?? 0;
+    document.getElementById('ds-total').textContent    = d.total     ?? 0;
+  } catch(e) {}
+}
+
+function setVFilter(key, val) {
+  if (key === 'v_status') document.getElementById('filter-vstatus').value = val;
+  if (key === 'v_priority') document.getElementById('filter-vpriority').value = val;
+  loadPage(1);
+}
+function clearVFilters() {
+  document.getElementById('filter-vstatus').value = '';
+  document.getElementById('filter-vpriority').value = '';
+  loadPage(1);
+}
 
 // ── 요약 필터 ──────────────────────────────────────────────
 function setSummaryFilter(val) {
@@ -323,16 +482,20 @@ function setSummaryFilter(val) {
 // ── 목록 로드 ──────────────────────────────────────────────
 async function loadPage(page) {
   currentPage = page;
-  const source  = document.getElementById('filter-source').value;
-  const fromDate= document.getElementById('filter-date').value;
-  const keyword = document.getElementById('filter-keyword').value.trim();
+  const source    = document.getElementById('filter-source').value;
+  const fromDate  = document.getElementById('filter-date').value;
+  const keyword   = document.getElementById('filter-keyword').value.trim();
+  const vStatus   = document.getElementById('filter-vstatus').value;
+  const vPriority = document.getElementById('filter-vpriority').value;
 
   const params = new URLSearchParams({page, page_size: PAGE_SIZE, from_date: fromDate});
-  if (source) params.set('source', source);
+  if (source)    params.set('source', source);
   if (summaryFilter) params.set('has_summary', summaryFilter);
+  if (vStatus)   params.set('v_status', vStatus);
+  if (vPriority) params.set('v_priority', vPriority);
 
   const tbody = document.getElementById('notice-tbody');
-  tbody.innerHTML = '<tr class="loading-row"><td colspan="5">불러오는 중...</td></tr>';
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="7">불러오는 중...</td></tr>';
   setStatus('목록 로드 중...', 'loading');
 
   try {
@@ -347,22 +510,28 @@ async function loadPage(page) {
     const filtered = keyword ? notices.filter(n => n.title.includes(keyword)) : notices;
 
     if (!filtered.length) {
-      tbody.innerHTML = '<tr class="loading-row"><td colspan="5">데이터가 없습니다</td></tr>';
+      tbody.innerHTML = '<tr class="loading-row"><td colspan="7">데이터가 없습니다</td></tr>';
     } else {
-      tbody.innerHTML = filtered.map(n => `
+      tbody.innerHTML = filtered.map(n => {
+        const vstatus   = n.v_status   || 'pending';
+        const vpriority = n.v_priority || 'normal';
+        return `
         <tr onclick="openModal(${n.id})">
           <td><span class="tag tag-${n.source}">${n.source==='mohw'?'복지부':'심평원'}</span></td>
           <td><span class="tag tag-cat">${esc(n.category||'-')}</span></td>
           <td>${esc(n.title)}</td>
           <td>${n.posted_date}</td>
           <td class="${n.summary?'has-sum':'no-sum'}">${n.summary?'✔':'-'}</td>
-        </tr>`).join('');
+          <td><span class="v-tag v-${vstatus}">${STATUS_LABELS[vstatus]||vstatus}</span></td>
+          <td><span class="v-tag v-${vpriority}">${PRIORITY_LABELS[vpriority]||vpriority}</span></td>
+        </tr>`;
+      }).join('');
     }
 
     renderPagination(page, pages);
     setStatus(`총 ${total}건 · ${page}/${pages} 페이지`);
   } catch(e) {
-    tbody.innerHTML = '<tr class="loading-row"><td colspan="5">서버 연결 오류</td></tr>';
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="7">서버 연결 오류</td></tr>';
     setStatus('서버 연결 오류', 'error');
   }
 }
@@ -378,6 +547,7 @@ function renderPagination(page, pages) {
 
 // ── 모달 팝업 ──────────────────────────────────────────────
 async function openModal(id) {
+  currentNoticeId = id;
   document.getElementById('modal-bg').classList.add('open');
   document.getElementById('m-title').textContent = '불러오는 중...';
   document.getElementById('m-meta').innerHTML = '';
@@ -404,6 +574,62 @@ function renderModal(n) {
     ${n.detail_url ? `<a href="${n.detail_url}" target="_blank">🔗 원문 보기 ↗</a>` : ''}
   `;
 
+  // 요약 섹션
+  let summaryHtml;
+  if (n.summary) {
+    const isEmr = n.summary.includes('EMR') || n.summary.includes('모듈') || n.summary.includes('청구');
+    summaryHtml = `
+      <div>
+        <div class="section-divider">■ 요약 분석 (의사랑 EMR 적용 관점)</div>
+        <div class="summary-card ${isEmr?'emr':''}">${esc(n.summary)}</div>
+      </div>`;
+  } else {
+    summaryHtml = `
+      <div>
+        <div class="section-divider">■ 요약 분석</div>
+        <span class="no-sum-msg">요약 없음 — [요약 실행] 버튼을 눌러 생성하세요</span>
+      </div>`;
+  }
+
+  // 검증 패널
+  const v = n.verification || { status:'pending', priority:'normal', memo:'', modules:{} };
+  const modules = v.modules || {};
+
+  const statusOptions = Object.entries(STATUS_LABELS).map(([val,lbl]) =>
+    `<option value="${val}" ${v.status===val?'selected':''}>${lbl}</option>`).join('');
+  const priorityOptions = Object.entries(PRIORITY_LABELS).map(([val,lbl]) =>
+    `<option value="${val}" ${v.priority===val?'selected':''}>${lbl}</option>`).join('');
+
+  const moduleChips = Object.entries(MODULE_LABELS).map(([key,lbl]) => {
+    const checked = modules[key] ? 'checked' : '';
+    return `<label class="module-chip ${modules[key]?'checked':''}" id="chip-${key}">
+      <input type="checkbox" id="mod-${key}" ${checked} onchange="onModuleChange('${key}')"> ${lbl}
+    </label>`;
+  }).join('');
+
+  const verifyHtml = `
+    <div class="verify-panel">
+      <div class="vp-title">■ 검증 관리</div>
+      <div class="verify-row">
+        <div class="verify-field">
+          <label>검증 상태</label>
+          <select id="vp-status">${statusOptions}</select>
+        </div>
+        <div class="verify-field">
+          <label>우선순위</label>
+          <select id="vp-priority">${priorityOptions}</select>
+        </div>
+      </div>
+      <div style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;font-weight:600">EMR 모듈 체크리스트</div>
+      <div class="module-grid">${moduleChips}</div>
+      <textarea class="memo-area" id="vp-memo" placeholder="검토 메모를 입력하세요...">${esc(v.memo||'')}</textarea>
+      <div class="vp-save-row">
+        <button class="btn btn-primary" onclick="saveVerification()">저장</button>
+        <span class="vp-saved-msg" id="vp-saved">✔ 저장되었습니다</span>
+      </div>
+    </div>`;
+
+  // 첨부파일
   const atts = n.attachments || [];
   const attHtml = atts.length ? `
     <div class="attach-section">
@@ -413,23 +639,47 @@ function renderModal(n) {
       </ul>
     </div>` : '';
 
-  let summaryHtml;
-  if (n.summary) {
-    const isEmr = n.summary.includes('EMR') || n.summary.includes('모듈') || n.summary.includes('청구');
-    summaryHtml = `
-      <div class="section-divider">■ 요약 분석 (의사랑 EMR 적용 관점)</div>
-      <div class="summary-card ${isEmr?'emr':''}">${esc(n.summary)}</div>`;
-  } else {
-    summaryHtml = `
-      <div class="section-divider">■ 요약 분석</div>
-      <span class="no-sum-msg">요약 없음 — [요약 실행] 버튼을 눌러 생성하세요</span>`;
-  }
+  document.getElementById('m-body').innerHTML = summaryHtml + verifyHtml + attHtml;
+}
 
-  document.getElementById('m-body').innerHTML = summaryHtml + attHtml;
+// 모듈 체크박스 변경 즉시 저장
+async function onModuleChange(key) {
+  const checked = document.getElementById('mod-' + key).checked;
+  const chip = document.getElementById('chip-' + key);
+  if (checked) chip.classList.add('checked');
+  else chip.classList.remove('checked');
+  // 모듈만 즉시 패치
+  await fetch(`/api/notices/${currentNoticeId}/modules`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ [key]: checked })
+  });
+}
+
+async function saveVerification() {
+  const status   = document.getElementById('vp-status').value;
+  const priority = document.getElementById('vp-priority').value;
+  const memo     = document.getElementById('vp-memo').value;
+
+  await fetch(`/api/notices/${currentNoticeId}/verification`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ status, priority, memo })
+  });
+
+  // 저장 완료 메시지
+  const msg = document.getElementById('vp-saved');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+
+  // 목록 새로고침 + 대시보드 갱신
+  loadPage(currentPage);
+  loadDashboard();
 }
 
 function closeModal() {
   document.getElementById('modal-bg').classList.remove('open');
+  currentNoticeId = null;
 }
 function onModalBgClick(e) {
   if (e.target === document.getElementById('modal-bg')) closeModal();
@@ -492,7 +742,6 @@ function toggleAlerts() {
   dd.classList.toggle('open');
 }
 
-// 외부 클릭 시 알람 닫기
 document.addEventListener('click', e => {
   const dd = document.getElementById('alert-dropdown');
   if (!e.target.closest('.bell-btn') && !e.target.closest('.alert-dropdown')) {
@@ -514,6 +763,7 @@ async function runTask(task) {
       setStatus(`${label} 완료`);
       loadPage(1);
       fetchAlerts();
+      loadDashboard();
     } else {
       setStatus(`${label} 오류`, 'error');
       alert(`${label} 실패:\n\n${(data.output||'').slice(-500)}`);
@@ -545,7 +795,7 @@ document.getElementById('filter-keyword').addEventListener('keydown', e => {
 // 초기 로드
 loadPage(1);
 fetchAlerts();
-// 30초마다 알람 폴링
+loadDashboard();
 setInterval(fetchAlerts, 30000);
 </script>
 </body>
