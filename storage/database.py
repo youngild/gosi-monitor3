@@ -1,6 +1,7 @@
 """SQLite 데이터베이스 관리"""
 import sqlite3
 import os
+from typing import Optional
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'notices.db')
 
@@ -10,14 +11,14 @@ VERIFICATION_PRIORITIES = ('urgent', 'normal', 'low')
 EMR_MODULES = ('billing', 'prescription', 'emr_record', 'payment', 'report', 'ocs', 'lab')
 
 
-def get_conn():
+def get_conn() -> sqlite3.Connection:
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-def init_db():
+def init_db() -> None:
     with get_conn() as conn:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS notices (
@@ -70,7 +71,8 @@ def init_db():
         """)
 
 
-def upsert_notice(source, notice_id, category, title, issued_no, posted_date, detail_url):
+def upsert_notice(source: str, notice_id: str, category: Optional[str], title: str,
+                  issued_no: Optional[str], posted_date: str, detail_url: Optional[str]) -> tuple[int, bool]:
     with get_conn() as conn:
         row = conn.execute(
             "SELECT id FROM notices WHERE source=? AND notice_id=?",
@@ -86,12 +88,12 @@ def upsert_notice(source, notice_id, category, title, issued_no, posted_date, de
         return cur.lastrowid, True
 
 
-def add_alert(notice_db_id):
+def add_alert(notice_db_id: int) -> None:
     with get_conn() as conn:
         conn.execute("INSERT INTO alerts (notice_id) VALUES (?)", (notice_db_id,))
 
 
-def get_unread_alerts():
+def get_unread_alerts() -> list[dict]:
     with get_conn() as conn:
         rows = conn.execute("""
             SELECT a.id, a.notice_id, a.created_at,
@@ -104,7 +106,7 @@ def get_unread_alerts():
         return [dict(r) for r in rows]
 
 
-def mark_alerts_read(alert_ids: list):
+def mark_alerts_read(alert_ids: list[int]) -> None:
     if not alert_ids:
         return
     placeholders = ','.join('?' * len(alert_ids))
@@ -112,7 +114,8 @@ def mark_alerts_read(alert_ids: list):
         conn.execute(f"UPDATE alerts SET is_read=1 WHERE id IN ({placeholders})", alert_ids)
 
 
-def save_attachment(notice_db_id, filename, file_type, download_url, local_path=None):
+def save_attachment(notice_db_id: int, filename: str, file_type: Optional[str],
+                    download_url: Optional[str], local_path: Optional[str] = None) -> None:
     with get_conn() as conn:
         conn.execute(
             """INSERT OR IGNORE INTO attachments (notice_id, filename, file_type, download_url, local_path)
@@ -121,7 +124,7 @@ def save_attachment(notice_db_id, filename, file_type, download_url, local_path=
         )
 
 
-def update_summary(notice_db_id, summary):
+def update_summary(notice_db_id: int, summary: str) -> None:
     with get_conn() as conn:
         conn.execute("UPDATE notices SET summary=? WHERE id=?", (summary, notice_db_id))
 
@@ -181,7 +184,7 @@ def get_notices(source=None, from_date='2026-03-01', limit=50, offset=0,
         return [dict(r) for r in conn.execute(sql, params).fetchall()]
 
 
-def get_notice_with_attachments(notice_db_id):
+def get_notice_with_attachments(notice_db_id: int) -> dict:
     with get_conn() as conn:
         notice = dict(conn.execute("SELECT * FROM notices WHERE id=?", (notice_db_id,)).fetchone())
         attachments = [dict(r) for r in conn.execute(
@@ -193,7 +196,7 @@ def get_notice_with_attachments(notice_db_id):
 
 # ── 검증 시스템 ────────────────────────────────────────────
 
-def get_or_create_verification(notice_db_id):
+def get_or_create_verification(notice_db_id: int) -> int:
     with get_conn() as conn:
         row = conn.execute(
             "SELECT id FROM verifications WHERE notice_id=?", (notice_db_id,)
@@ -206,7 +209,8 @@ def get_or_create_verification(notice_db_id):
         return cur.lastrowid
 
 
-def update_verification(notice_db_id, status=None, priority=None, memo=None):
+def update_verification(notice_db_id: int, status: Optional[str] = None,
+                        priority: Optional[str] = None, memo: Optional[str] = None) -> int:
     vid = get_or_create_verification(notice_db_id)
     sets, params = [], []
     if status is not None:
@@ -223,7 +227,7 @@ def update_verification(notice_db_id, status=None, priority=None, memo=None):
     return vid
 
 
-def upsert_module_check(notice_db_id, module_name, is_checked):
+def upsert_module_check(notice_db_id: int, module_name: str, is_checked: bool) -> None:
     vid = get_or_create_verification(notice_db_id)
     with get_conn() as conn:
         conn.execute(
@@ -235,7 +239,7 @@ def upsert_module_check(notice_db_id, module_name, is_checked):
         )
 
 
-def get_verification_with_modules(notice_db_id):
+def get_verification_with_modules(notice_db_id: int) -> dict:
     with get_conn() as conn:
         row = conn.execute(
             "SELECT * FROM verifications WHERE notice_id=?", (notice_db_id,)
@@ -255,7 +259,7 @@ def get_verification_with_modules(notice_db_id):
         return v
 
 
-def get_dashboard_stats():
+def get_dashboard_stats() -> dict:
     with get_conn() as conn:
         total = conn.execute("SELECT COUNT(*) FROM notices").fetchone()[0]
         rows = conn.execute(

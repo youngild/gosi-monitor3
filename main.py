@@ -16,9 +16,9 @@ from scraper import mohw, hira
 from analyzer.summarizer import extract_text_from_file, summarize
 
 
-def run_crawl():
+def run_crawl() -> None:
     init_db()
-    new_total = 0
+    new_total: int = 0
 
     # 보건복지부
     mohw_items = mohw.crawl()
@@ -60,7 +60,7 @@ def run_crawl():
     print(f"\n신규 수집: {new_total}건")
 
 
-def run_summarize():
+def run_summarize() -> None:
     """미요약 게시물의 첨부파일(PDF 우선, HWPX 차선)을 다운로드·추출 후 AI 요약."""
     import os
     # 게시물별로 최적 첨부파일 1개 선택: PDF > HWPX > 기타
@@ -119,7 +119,7 @@ def run_summarize():
         print(f"    → 완료")
 
 
-def run_serve():
+def run_serve() -> None:
     from web.app import create_app
     app = create_app()
     app.run(debug=True, host='0.0.0.0', port=5000)
