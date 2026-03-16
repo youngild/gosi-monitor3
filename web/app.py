@@ -76,6 +76,15 @@ def create_app():
 
     # ── 라우트 ──────────────────────────────────────────────
 
+    @app.route('/health')
+    def health():
+        try:
+            from storage.database import get_dashboard_stats
+            get_dashboard_stats()
+            return jsonify({'status': 'ok'}), 200
+        except Exception as e:
+            return jsonify({'status': 'error', 'detail': str(e)}), 500
+
     @app.route('/')
     def index():
         return render_template('index.html')

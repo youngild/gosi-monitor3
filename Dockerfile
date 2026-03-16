@@ -25,4 +25,9 @@ RUN mkdir -p data/files/mohw data/files/hira
 
 EXPOSE 5000
 
-CMD gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 1 --timeout 120 "web.app:create_app()"
+CMD gunicorn --bind 0.0.0.0:${PORT:-5000} \
+    --workers 1 \
+    --threads 2 \
+    --timeout 300 \
+    --graceful-timeout 120 \
+    "web.app:create_app()"

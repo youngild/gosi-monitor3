@@ -9,3 +9,4 @@ services:
         sync: false
       - key: PYTHONUNBUFFERED
         value: "1"
+    healthCheckPath: /health
