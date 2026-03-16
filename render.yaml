@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: gosi-monitor3
+    runtime: docker
+    plan: free
+    repo: https://github.com/youngild/gosi-monitor3
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"

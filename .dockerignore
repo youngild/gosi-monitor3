@@ -1,0 +1,10 @@
+.git
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+data/
+.env
+.claude
+qt-app
+*.ps1
