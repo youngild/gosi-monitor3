@@ -127,8 +127,81 @@ def download_file(download_url: str, filename: str) -> str | None:
         return None
 
 
-def crawl(max_pages: int = 10) -> list[dict]:
-    """2026-03-01 이후 게시물 전체 수집."""
+def search_notices(keyword: str, max_pages: int = 20) -> list[dict]:
+    """키워드로 복지부 고시 검색 (최근 5년). 첨부파일 포함 반환."""
+    from datetime import timedelta
+    today      = date.today()
+    start_date = today - timedelta(days=365 * 5)
+    start_str  = start_date.strftime('%Y-%m-%d')
+    end_str    = today.strftime('%Y-%m-%d')
+
+    all_items = []
+    seen = set()
+    for page in range(1, max_pages + 1):
+        params = {
+            "mid": "a10409020000", "bid": "0026", "act": "list",
+            "nPage": page,
+            "searchKey": "title", "searchWord": keyword,
+            # 날짜 범위 (board.es 표준 파라미터)
+            "startDt":    start_str,
+            "endDt":      end_str,
+            "searchSdate": start_str,
+            "searchEdate": end_str,
+        }
+        try:
+            resp = requests.get(LIST_URL, params=params, headers=HEADERS, verify=False, timeout=10)
+            resp.raise_for_status()
+            soup = BeautifulSoup(resp.text, 'lxml')
+            rows = soup.select("table.tstyle_list tbody tr")
+            if not rows:
+                break
+            found_any = False
+            for row in rows:
+                if row.get('id', '').startswith('preView'):
+                    continue
+                tds = row.find_all('td')
+                if len(tds) < 5:
+                    continue
+                date_str = tds[4].get_text(strip=True)
+                title_td = row.find('td', attrs={'data-label': '제목'})
+                if not title_td:
+                    continue
+                a_tag = title_td.find('a')
+                if not a_tag:
+                    continue
+                title = a_tag.get_text(strip=True)
+                m = re.search(r'list_no=(\d+)', a_tag['href'])
+                notice_id = m.group(1) if m else ''
+                if not notice_id or notice_id in seen:
+                    continue
+                seen.add(notice_id)
+                found_any = True
+                category  = tds[1].get_text(strip=True) if len(tds) > 1 else ''
+                issued_no = tds[2].get_text(strip=True) if len(tds) > 2 else ''
+                detail_url = BASE_URL + a_tag['href']
+                try:
+                    atts = fetch_attachments(notice_id)
+                except Exception:
+                    atts = []
+                all_items.append({
+                    'notice_id':   notice_id,
+                    'title':       title,
+                    'category':    category,
+                    'issued_no':   issued_no,
+                    'posted_date': date_str,
+                    'detail_url':  detail_url,
+                    'attachments': atts,
+                })
+            if not found_any:
+                break
+        except Exception as e:
+            print(f"[MOHW] 검색 오류 (page {page}): {e}")
+            break
+    return all_items
+
+
+def crawl(max_pages: int = 10, known_ids: set = None) -> list[dict]:
+    """2026-03-01 이후 게시물 수집. known_ids에 있는 항목 발견 시 조기 중단."""
     all_items = []
     for page in range(1, max_pages + 1):
         print(f"[MOHW] 페이지 {page} 크롤링 중...")
@@ -137,9 +210,22 @@ def crawl(max_pages: int = 10) -> list[dict]:
         except Exception as e:
             print(f"[MOHW] 페이지 {page} 오류: {e}")
             break
-        all_items.extend(items)
+        # 이미 DB에 있는 항목 발견 시 중단 (최신순 정렬이므로 이후는 모두 기존 항목)
+        if known_ids:
+            new_items = []
+            for item in items:
+                if item['notice_id'] in known_ids:
+                    stop = True
+                    break
+                new_items.append(item)
+            all_items.extend(new_items)
+        else:
+            all_items.extend(items)
         if stop:
-            print(f"[MOHW] 2026-03-01 이전 날짜 감지 - 수집 중단")
+            if known_ids:
+                print(f"[MOHW] 기존 항목 감지 - 수집 중단 (신규 {len(all_items)}건)")
+            else:
+                print(f"[MOHW] 2026-03-01 이전 날짜 감지 - 수집 중단")
             break
     print(f"[MOHW] 총 {len(all_items)}건 수집")
     return all_items

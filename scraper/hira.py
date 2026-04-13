@@ -1,153 +1,238 @@
 """
-건강보험심사평가원 InfoBank 크롤러
-https://biz.hira.or.kr/popup.ndo?formname=qya_bizcom::InfoBank.xfdl&framename=InfoBank
+건강보험심사평가원 크롤러
+https://biz.hira.or.kr/popup.ndo?formname=qya_bizcom%3A%3AInfoBank.xfdl&framename=InfoBank
 
-Nexacro14 프레임워크 기반 → Playwright로 브라우저 렌더링 후 데이터 추출
+Playwright로 InfoBank 팝업을 열고, Nexacro가 내부적으로 호출하는
+SSV API 응답을 가로채어 업무공지·자료 수집.
+첨부파일도 동일 브라우저 세션에서 개별 고시 상세 진입 후 수집.
 """
 import re
 import os
-import asyncio
+import requests
+import urllib3
 from datetime import date, datetime
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 DOWNLOAD_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'files', 'hira')
 FROM_DATE = date(2026, 3, 1)
-PAGE_URL = "https://biz.hira.or.kr/popup.ndo?formname=qya_bizcom%3A%3AInfoBank.xfdl&framename=InfoBank"
+BASE_URL  = "https://biz.hira.or.kr"
+INFOBANK_URL = (
+    BASE_URL
+    + "/popup.ndo?formname=qya_bizcom%3A%3AInfoBank.xfdl&framename=InfoBank"
+)
+
+# Nexacro가 내부 호출하는 SSV 엔드포인트 → 카테고리명 매핑
+SSV_ENDPOINT_MAP = {
+    '/qya/main/noticeList.ndo':    '업무공지',
+    '/qya/main/carInformList.ndo': '자료안내',
+}
 
 
-async def _scrape_with_playwright() -> list[dict]:
-    """Playwright로 InfoBank 렌더링 후 게시물 추출."""
-    from playwright.async_api import async_playwright
+# ══════════════════════════════════════════════════════
+#  SSV 파싱
+# ══════════════════════════════════════════════════════
 
+def _parse_ssv_board(raw: bytes, category: str) -> list[dict]:
+    """
+    Nexacro SSV 형식 파싱.
+    \x1e = Record Separator, \x1f = Unit Separator
+    """
+    RS = b'\x1e'
+    US = b'\x1f'
     items = []
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,
-            args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
-                  '--single-process', '--no-zygote']
-        )
-        context = await browser.new_context(ignore_https_errors=True)
-        page = await context.new_page()
 
-        print("[HIRA] 페이지 로딩 중...")
-        await page.goto(PAGE_URL, wait_until='networkidle', timeout=30000)
-
-        # Nexacro 렌더링 대기 (Grid 컴포넌트가 로드될 때까지)
-        await page.wait_for_timeout(3000)
-
-        # Nexacro Grid 셀 데이터 추출 (JavaScript로 직접 접근)
-        result = await page.evaluate("""
-            () => {
-                const items = [];
-                try {
-                    // Nexacro14 application 객체에서 데이터셋 접근 시도
-                    const app = nexacro.getApplication();
-                    if (!app) return { error: 'no app', items };
-
-                    // 컴포넌트 트리 탐색
-                    const frames = app._getFrameList ? app._getFrameList() : [];
-                    for (const frame of frames) {
-                        const comps = frame._getComponentList ? frame._getComponentList() : [];
-                        for (const comp of comps) {
-                            if (comp._type === 'Grid') {
-                                const ds = comp.dataset;
-                                if (!ds) continue;
-                                const rowCnt = ds.rowcount;
-                                for (let i = 0; i < rowCnt; i++) {
-                                    const row = {};
-                                    for (let j = 0; j < ds.colcount; j++) {
-                                        const colId = ds.getColID(j);
-                                        row[colId] = ds.getColumn(i, j);
-                                    }
-                                    items.push(row);
-                                }
-                            }
-                        }
-                    }
-                } catch(e) {
-                    return { error: e.toString(), items };
-                }
-                return { items };
-            }
-        """)
-
-        if result.get('error'):
-            print(f"[HIRA] Nexacro 직접 접근 실패: {result['error']}")
-            # Fallback: 화면에 렌더링된 텍스트 추출
-            items = await _extract_from_rendered_dom(page)
-        else:
-            raw_items = result.get('items', [])
-            items = _parse_nexacro_rows(raw_items)
-
-        await browser.close()
-    return items
-
-
-async def _extract_from_rendered_dom(page) -> list[dict]:
-    """Nexacro Grid가 렌더링한 DOM에서 텍스트 추출 (fallback)."""
-    items = []
     try:
-        # Nexacro Grid는 div 기반으로 렌더링됨
-        rows = await page.query_selector_all('div[id*="Grid"] div[class*="body-row"]')
-        if not rows:
-            # 일반 테이블 시도
-            rows = await page.query_selector_all('table tr')
+        records = raw.split(RS)
+        cols = []
+        for rec in records:
+            rec_str = rec.decode('utf-8', errors='ignore')
 
-        for row in rows:
-            text = await row.inner_text()
-            cells = [c.strip() for c in text.split('\t') if c.strip()]
-            if len(cells) >= 3:
-                items.append({'raw_cells': cells})
-    except Exception as e:
-        print(f"[HIRA] DOM 추출 오류: {e}")
-
-    # 스크린샷 저장 (디버그용)
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    await page.screenshot(path=os.path.join(DOWNLOAD_DIR, 'hira_screenshot.png'))
-    print(f"[HIRA] 스크린샷 저장: {DOWNLOAD_DIR}/hira_screenshot.png")
-    return items
-
-
-def _parse_nexacro_rows(raw_rows: list[dict]) -> list[dict]:
-    """Nexacro 데이터셋 행을 표준 형식으로 변환."""
-    items = []
-    for row in raw_rows:
-        # 컬럼명은 실제 실행 후 확인 필요 - 일반적인 이름 시도
-        title = row.get('TITLE') or row.get('title') or row.get('NTCE_NM') or ''
-        date_str = row.get('REG_DT') or row.get('NTCE_DE') or row.get('date') or ''
-        notice_id = row.get('SEQ') or row.get('NTCE_NO') or row.get('id') or str(hash(title))
-
-        if not title:
-            continue
-
-        # 날짜 필터 (2026-03-01 이후)
-        try:
-            posted = datetime.strptime(date_str[:10], '%Y-%m-%d').date()
-            if posted < FROM_DATE:
+            if rec_str.startswith('_RowType_'):
+                col_defs = rec.split(US)
+                cols = []
+                for cd in col_defs[1:]:
+                    col_name = cd.decode('utf-8', errors='ignore').split(':')[0].strip()
+                    if col_name:
+                        cols.append(col_name)
                 continue
-        except (ValueError, TypeError):
-            pass  # 날짜 파싱 실패시 포함
 
-        items.append({
-            'source': 'hira',
-            'notice_id': str(notice_id),
-            'category': row.get('CTGRY') or row.get('category') or '',
-            'title': title,
-            'issued_no': row.get('NTCE_NO') or '',
-            'posted_date': date_str[:10] if date_str else '',
-            'detail_url': PAGE_URL,
-        })
+            if not rec_str.startswith('N') or not cols:
+                continue
+
+            vals = rec.split(US)
+            vals = [v.decode('utf-8', errors='ignore').strip() for v in vals[1:]]
+            row = {cols[i]: vals[i] if i < len(vals) else '' for i in range(len(cols))}
+
+            raw_date = row.get('regDate', '') or row.get('REG_DATE', '')
+            posted_date = ''
+            if raw_date and len(raw_date) >= 8:
+                try:
+                    dt = datetime.strptime(raw_date[:8], '%Y%m%d')
+                    if dt.date() < FROM_DATE:
+                        continue
+                    posted_date = dt.strftime('%Y-%m-%d')
+                except ValueError:
+                    pass
+
+            title = (row.get('title') or row.get('TITLE') or row.get('nttSj') or '').strip()
+            if not title:
+                continue
+
+            bbs_id  = row.get('bbsId', '')
+            item_id = row.get('itemId', '') or row.get('nttId', '')
+            notice_id = f"{bbs_id}_{item_id}" if item_id else str(abs(hash(title + posted_date)))
+
+            items.append({
+                'source':      'hira',
+                'notice_id':   notice_id,
+                'category':    category,
+                'title':       title,
+                'issued_no':   '',
+                'posted_date': posted_date,
+                'detail_url':  INFOBANK_URL,
+            })
+    except Exception as e:
+        print(f"[HIRA] SSV 파싱 오류: {e}")
+
     return items
 
+
+# ══════════════════════════════════════════════════════
+#  파일 다운로드 (requests)
+# ══════════════════════════════════════════════════════
+
+def _get_session() -> requests.Session:
+    session = requests.Session()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': BASE_URL + '/',
+    })
+    try:
+        session.get(BASE_URL, verify=False, timeout=15)
+    except Exception:
+        pass
+    return session
+
+
+def download_file(download_url: str, filename: str) -> str | None:
+    """파일 다운로드 후 로컬 경로 반환."""
+    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+    safe_name = re.sub(r'[\\/:*?"<>|]', '_', filename)
+    local_path = os.path.join(DOWNLOAD_DIR, safe_name)
+    if os.path.exists(local_path):
+        return local_path
+    try:
+        resp = _get_session().get(download_url, verify=False, timeout=30, stream=True)
+        resp.raise_for_status()
+        with open(local_path, 'wb') as f:
+            for chunk in resp.iter_content(8192):
+                f.write(chunk)
+        return local_path
+    except Exception as e:
+        print(f"[HIRA] 다운로드 실패: {filename} - {e}")
+        return None
+
+
+# ══════════════════════════════════════════════════════
+#  첨부파일 수집 (Playwright)
+# ══════════════════════════════════════════════════════
+
+def fetch_attachments(notice_id: str) -> list[dict]:
+    """
+    HIRA 개별 고시 첨부파일 수집 (Playwright).
+    notice_id 형식: {bbsId}_{itemId}
+    """
+    parts = notice_id.rsplit('_', 1)
+    if len(parts) != 2:
+        return []
+    bbs_id, item_id = parts[0], parts[1]
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("[HIRA] Playwright 미설치 - 첨부파일 수집 불가")
+        return []
+
+    attachments = []
+    detail_url = (
+        f"{BASE_URL}/popup.ndo"
+        f"?formname=qya_bizcom%3A%3AInfoBank.xfdl"
+        f"&framename=InfoBank"
+        f"&bbsId={bbs_id}&itemId={item_id}"
+    )
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            ctx = browser.new_context(ignore_https_errors=True)
+            page = ctx.new_page()
+            page.goto(detail_url, timeout=30000, wait_until='networkidle')
+            page.wait_for_timeout(3000)
+
+            links = page.evaluate("""() => {
+                const results = [];
+                document.querySelectorAll('a[href]').forEach(a => {
+                    const href = a.href || '';
+                    const text = a.textContent.trim();
+                    if (href && (href.includes('down') || href.includes('file') ||
+                        /\\.(pdf|hwp|hwpx|xlsx|xls|docx|zip)$/i.test(href) ||
+                        /\\.(pdf|hwp|hwpx|xlsx|xls|docx|zip)$/i.test(text))) {
+                        results.push({url: href, text: text});
+                    }
+                });
+                return results;
+            }""")
+
+            for lnk in links:
+                url  = lnk.get('url', '')
+                text = lnk.get('text', '파일')
+                if not url or url.startswith('javascript'):
+                    continue
+                m   = re.search(r'\.(pdf|hwp|hwpx|xlsx|xls|docx|zip)', url + ' ' + text, re.I)
+                ext = m.group(1).lower() if m else 'bin'
+                filename = text if text else f"hira_{item_id}.{ext}"
+                attachments.append({'filename': filename, 'file_type': ext, 'download_url': url})
+
+            browser.close()
+            print(f"[HIRA] {item_id} 첨부파일 {len(attachments)}건")
+    except Exception as e:
+        print(f"[HIRA] 첨부파일 수집 오류 ({item_id}): {e}")
+
+    return attachments
+
+
+# ══════════════════════════════════════════════════════
+#  크롤링 (InfoBank SSV API 직접 호출)
+# ══════════════════════════════════════════════════════
 
 def crawl() -> list[dict]:
-    """InfoBank 게시물 수집 (동기 래퍼)."""
-    try:
-        items = asyncio.run(_scrape_with_playwright())
-        print(f"[HIRA] 총 {len(items)}건 수집")
-        return items
-    except ImportError:
-        print("[HIRA] playwright가 설치되지 않았습니다. 'pip install playwright && playwright install chromium' 실행 필요")
-        return []
-    except Exception as e:
-        print(f"[HIRA] 크롤링 오류: {e}")
-        return []
+    """
+    HIRA InfoBank SSV API를 직접 호출하여 목록 수집.
+    (Nexacro 앱이 내부적으로 호출하는 동일한 엔드포인트 사용)
+    """
+    session   = _get_session()
+    all_items: list[dict] = []
+    seen_ids:  set[str]   = set()
+
+    for endpoint, category in SSV_ENDPOINT_MAP.items():
+        try:
+            resp = session.post(
+                BASE_URL + endpoint,
+                verify=False, timeout=15,
+                data='',
+                headers={'Content-Type': 'application/x-www-form-urlencoded'},
+            )
+            resp.raise_for_status()
+            items = _parse_ssv_board(resp.content, category)
+            new   = [i for i in items if i['notice_id'] not in seen_ids]
+            for i in new:
+                seen_ids.add(i['notice_id'])
+            all_items.extend(new)
+            print(f"[HIRA] {category}: {len(new)}건 ({endpoint})")
+        except Exception as e:
+            print(f"[HIRA] {endpoint} 오류: {e}")
+
+    print(f"[HIRA] 총 {len(all_items)}건 수집")
+    return all_items

@@ -95,6 +95,93 @@
     .dash-reload { margin-left: auto; font-size: 0.78rem; color: var(--gray);
                    background: none; border: none; cursor: pointer; }
 
+    /* ── 탭 네비게이션 ── */
+    .tab-nav {
+      background: #fff; border-bottom: 2px solid var(--border);
+      padding: 0 20px; display: flex; gap: 0;
+    }
+    .tab-btn {
+      padding: 12px 22px; font-size: 0.88rem; font-weight: 600;
+      border: none; background: none; cursor: pointer; color: var(--gray);
+      border-bottom: 3px solid transparent; margin-bottom: -2px;
+      font-family: inherit; transition: color .15s;
+    }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .tab-btn:hover:not(.active) { color: #333; }
+
+    /* ── 파일 분석 패널 ── */
+    .upload-panel { padding: 20px; max-width: 1100px; margin: 0 auto; }
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .upload-card {
+      background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px;
+    }
+    .upload-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--blue); }
+    .drop-zone {
+      border: 2px dashed #c0c8d8; border-radius: 8px; padding: 28px 16px;
+      text-align: center; cursor: pointer; transition: all .15s; background: #f8faff;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--blue); background: #eef3ff;
+    }
+    .drop-zone .dz-icon { font-size: 2rem; margin-bottom: 8px; }
+    .drop-zone .dz-text { font-size: 0.83rem; color: var(--gray); line-height: 1.5; }
+    .drop-zone .dz-file {
+      font-size: 0.83rem; font-weight: 600; color: var(--blue); margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .dz-file-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+    .dz-file-item {
+      display: flex; align-items: center; gap: 6px;
+      background: #f0f5ff; border: 1px solid #c0d0e8; border-radius: 4px;
+      padding: 4px 8px; font-size: 0.79rem;
+    }
+    .dz-file-item .fi-name { flex: 1; color: var(--blue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .dz-file-item .fi-remove { color: var(--red); cursor: pointer; background: none; border: none; font-family: inherit; padding: 0 2px; font-size: 0.75rem; flex-shrink: 0; }
+    .prev-select-area { margin-top: 10px; }
+    .prev-select-area label { font-size: 0.8rem; color: var(--gray); display: block; margin-bottom: 4px; }
+    .prev-notice-search {
+      display: flex; gap: 6px; margin-bottom: 8px;
+    }
+    .prev-notice-search input, .prev-notice-search select {
+      flex: 1; border: 1px solid #ccc; border-radius: 4px;
+      padding: 5px 8px; font-size: 0.83rem; font-family: inherit;
+    }
+    .prev-notice-list {
+      max-height: 180px; overflow-y: auto; border: 1px solid var(--border);
+      border-radius: 4px; background: #fff;
+    }
+    .prev-notice-item {
+      padding: 7px 10px; border-bottom: 1px solid #f0f0f0;
+      font-size: 0.8rem; cursor: pointer; transition: background .1s;
+    }
+    .prev-notice-item:hover { background: #f0f5ff; }
+    .prev-notice-item.selected { background: #e8f0fe; font-weight: 600; }
+    .prev-notice-item .pni-date { color: var(--gray); font-size: 0.75rem; }
+    .analyze-bar {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .result-panel { background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+    .result-tabs {
+      display: flex; border-bottom: 1px solid var(--border); background: #f8f9fc;
+      border-radius: 8px 8px 0 0; overflow: hidden;
+    }
+    .result-tab {
+      flex: 1; padding: 11px; font-size: 0.83rem; font-weight: 600;
+      border: none; background: none; cursor: pointer; color: var(--gray);
+      border-right: 1px solid var(--border); font-family: inherit; transition: background .1s;
+    }
+    .result-tab:last-child { border-right: none; }
+    .result-tab.active { background: #fff; color: var(--blue); }
+    .result-section { padding: 20px; display: none; white-space: pre-wrap;
+                      font-size: 0.83rem; line-height: 1.7; min-height: 300px; }
+    .result-section.active { display: block; }
+    .result-section h3 { font-size: 0.9rem; font-weight: 700; color: var(--blue);
+                          margin: 14px 0 6px; border-left: 3px solid var(--blue); padding-left: 8px; }
+    .result-section strong { color: #222; }
+    .result-empty { text-align: center; color: var(--gray); padding: 60px 20px; font-size: 0.9rem; }
+    .result-dl-bar { padding: 10px 16px; border-top: 1px solid var(--border);
+                      display: flex; gap: 8px; justify-content: flex-end; }
+
     /* ── 툴바 ── */
     .toolbar {
       background: #fff; border-bottom: 1px solid var(--border);
@@ -156,6 +243,7 @@
     th { font-weight: 600; white-space: nowrap; }
     tbody tr { border-bottom: 1px solid #f0f2f7; cursor: pointer; transition: background .1s; }
     tbody tr:hover { background: #f0f5ff; }
+    td.col-date { white-space: nowrap; }
 
     .tag {
       display: inline-block; padding: 1px 7px; border-radius: 10px;
@@ -166,6 +254,13 @@
     .tag-cat    { background: #fff0dc; color: var(--orange); }
     .has-sum    { color: var(--green); font-weight: 700; font-size: 0.78rem; }
     .no-sum     { color: #ccc; font-size: 0.78rem; }
+    .btn-att-analyze {
+      margin-left: 8px; padding: 1px 8px; font-size: 0.73rem; font-weight: 600;
+      border: 1px solid var(--orange); background: #fff8f0; color: var(--orange);
+      border-radius: 4px; cursor: pointer; vertical-align: middle; font-family: inherit;
+    }
+    .btn-att-analyze:hover { background: var(--orange); color: #fff; }
+    .btn-att-analyze:disabled { opacity: .45; cursor: default; }
 
     /* 페이지네이션 */
     .pagination {
@@ -251,6 +346,10 @@
     .attach-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
     .attach-list li a { color: var(--blue); font-size: 0.82rem; text-decoration: none; }
     .attach-list li a:hover { text-decoration: underline; }
+    .result-table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.82rem; }
+    .result-table th { background: #e8f0fe; color: var(--blue); font-weight: 700; padding: 6px 10px; border: 1px solid #c5d3f0; text-align: left; }
+    .result-table td { padding: 5px 10px; border: 1px solid #dde3f0; vertical-align: top; }
+    .result-table tr:nth-child(even) td { background: #f8faff; }
 
     /* 섹션 구분자 */
     .section-divider {
@@ -352,6 +451,14 @@
   <button class="dash-reload" onclick="loadDashboard()" title="새로고침">↺ 새로고침</button>
 </div>
 
+<!-- ── 탭 네비게이션 ── -->
+<div class="tab-nav">
+  <button class="tab-btn active" id="tab-btn-list"    onclick="showTab('list')">📋 고시 목록</button>
+  <button class="tab-btn"        id="tab-btn-analyze" onclick="showTab('analyze')">🔍 파일 비교 분석</button>
+</div>
+
+<!-- ── 탭1: 고시 목록 ── -->
+<div id="tab-list-panel">
 <div class="toolbar">
   <label>출처</label>
   <select id="filter-source">
@@ -360,8 +467,24 @@
     <option value="hira">심사평가원</option>
   </select>
 
-  <label>기준일</label>
-  <input type="date" id="filter-date" value="2026-03-01">
+  <label>구분</label>
+  <select id="filter-category" onchange="loadPage(1)">
+    <option value="">전체</option>
+    <optgroup label="보건복지부">
+      <option value="고시">고시</option>
+      <option value="훈령">훈령</option>
+      <option value="예규">예규</option>
+      <option value="지침">지침</option>
+      <option value="공고">공고</option>
+    </optgroup>
+    <optgroup label="심사평가원">
+      <option value="업무공지">업무공지</option>
+      <option value="자료안내">자료안내</option>
+    </optgroup>
+  </select>
+
+  <label>검색 기간</label>
+  <input type="date" id="filter-from"> ~ <input type="date" id="filter-to">
 
   <input type="text" id="filter-keyword" placeholder="제목 검색...">
 
@@ -390,8 +513,7 @@
 
   <button class="btn btn-primary" onclick="loadPage(1)">검색</button>
   <div class="sep"></div>
-  <button class="btn btn-success" id="btn-crawl"     onclick="runTask('crawl')">크롤링</button>
-  <button class="btn btn-warn"    id="btn-summarize" onclick="runTask('summarize')">요약 실행</button>
+  <button class="btn btn-success" id="btn-crawl" onclick="runTask('crawl')">크롤링</button>
   <span class="total-badge" id="total-badge">총 0건</span>
 </div>
 
@@ -402,7 +524,7 @@
         <th style="width:62px">출처</th>
         <th style="width:70px">구분</th>
         <th>제목</th>
-        <th style="width:90px">등록일</th>
+        <th style="width:108px">등록일</th>
         <th style="width:54px">요약</th>
         <th style="width:72px">검증상태</th>
         <th style="width:60px">우선순위</th>
@@ -419,6 +541,102 @@
   <div class="spinner"></div>
   <span id="status-msg">준비됨</span>
 </div>
+</div><!-- /tab-list-panel -->
+
+<!-- ── 탭2: 파일 비교 분석 ── -->
+<div id="tab-analyze-panel" style="display:none">
+<div class="upload-panel">
+  <div class="upload-grid">
+    <!-- 분석 대상 파일 -->
+    <div class="upload-card">
+      <h3>① 분석할 파일 (신규 고시)</h3>
+      <div class="drop-zone" id="dz-new"
+           ondragover="dzDrag(event,'new')" ondragleave="dzLeave('new')" ondrop="dzDrop(event,'new')"
+           onclick="document.getElementById('fi-new').click()">
+        <div class="dz-icon">📄</div>
+        <div class="dz-text">PDF 파일을 끌어다 놓거나 클릭하여 선택<br><small>여러 파일 동시 선택 가능 · .pdf, .hwpx 지원</small></div>
+      </div>
+      <input type="file" id="fi-new" accept=".pdf,.hwpx" style="display:none" multiple onchange="dzFileSelect(event,'new')">
+      <div class="dz-file-list" id="dz-new-list"></div>
+      <div style="margin-top:10px">
+        <label style="font-size:0.8rem;color:var(--gray)">제목 (선택)</label>
+        <input type="text" id="up-title" placeholder="고시 제목 입력 (미입력 시 파일명 사용)"
+               style="width:100%;margin-top:4px;border:1px solid #ccc;border-radius:4px;padding:6px 8px;font-size:0.83rem;font-family:inherit">
+      </div>
+    </div>
+
+    <!-- 비교 대상 이전 고시 -->
+    <div class="upload-card">
+      <h3>② 비교할 이전 고시</h3>
+      <!-- 모드 선택 -->
+      <div style="display:flex;gap:0;border:1px solid #ccc;border-radius:4px;overflow:hidden;margin-bottom:12px">
+        <button id="pm-web"  onclick="setPrevMode('web')"  style="flex:1;padding:6px;font-size:0.8rem;font-weight:600;border:none;background:#e8f0fe;color:var(--blue);cursor:pointer;font-family:inherit">🌐 웹에서 검색</button>
+        <button id="pm-file" onclick="setPrevMode('file')" style="flex:1;padding:6px;font-size:0.8rem;font-weight:600;border:none;background:#f5f5f5;color:var(--gray);cursor:pointer;font-family:inherit">📁 직접 업로드</button>
+      </div>
+
+      <!-- 웹 검색 영역 -->
+      <div id="prev-web-area">
+        <div class="prev-notice-search">
+          <input type="text" id="prev-keyword" placeholder="고시 제목 키워드 (예: 요양급여, 수가)"
+                 onkeydown="if(event.key==='Enter') searchPrevWeb()">
+          <button class="btn btn-primary" onclick="searchPrevWeb()" style="white-space:nowrap;padding:5px 10px;font-size:0.8rem">검색</button>
+        </div>
+        <div style="font-size:0.75rem;color:var(--gray);margin-bottom:6px">보건복지부 고시 사이트에서 직접 검색합니다</div>
+        <div class="prev-notice-list" id="prev-notice-list">
+          <div style="padding:16px;color:var(--gray);font-size:0.8rem;text-align:center">키워드 입력 후 검색 버튼을 클릭하세요</div>
+        </div>
+        <div id="prev-selected-info" style="margin-top:8px;font-size:0.8rem;color:var(--green);font-weight:600;display:none"></div>
+      </div>
+
+      <!-- 직접 업로드 영역 -->
+      <div id="prev-file-area" style="display:none">
+        <div class="drop-zone" id="dz-prev"
+             ondragover="dzDrag(event,'prev')" ondragleave="dzLeave('prev')" ondrop="dzDrop(event,'prev')"
+             onclick="document.getElementById('fi-prev').click()">
+          <div class="dz-icon">📄</div>
+          <div class="dz-text">이전 고시 PDF 파일 업로드<br><small>여러 파일 동시 선택 가능 · .pdf, .hwpx 지원</small></div>
+        </div>
+        <input type="file" id="fi-prev" accept=".pdf,.hwpx" style="display:none" multiple onchange="dzFileSelect(event,'prev')">
+        <div class="dz-file-list" id="dz-prev-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 분석 실행 -->
+  <div style="font-size:0.78rem;color:var(--gray);margin-bottom:8px;padding:8px 12px;background:#f8f9fc;border-radius:6px;border:1px solid var(--border)">
+    💡 이전 고시를 선택하지 않으면 <strong>고시 제목으로 복지부 사이트를 자동 검색</strong>하여 가장 관련성 높은 이전 고시와 비교합니다.
+  </div>
+  <div class="analyze-bar">
+    <button class="btn btn-primary" id="btn-upload-analyze" onclick="runUploadAnalyze()" style="font-size:0.9rem;padding:8px 24px">
+      🔍 상세 비교 분석 시작
+    </button>
+    <button class="btn" id="btn-emr-only" onclick="runEmrOnlyAnalyze()" style="font-size:0.9rem;padding:8px 24px;background:#0fa37f;color:#fff;border:none;border-radius:6px;cursor:pointer">
+      🏥 EMR 적용 분석
+    </button>
+    <div class="spinner" id="upload-spinner" style="display:none;width:16px;height:16px;border-width:2px"></div>
+    <span id="upload-status" style="font-size:0.83rem;color:var(--gray)"></span>
+  </div>
+
+  <!-- 결과 출력 -->
+  <div class="result-panel" id="result-panel" style="display:none">
+    <div class="result-tabs">
+      <button class="result-tab active" id="rt-summary" onclick="showResultTab('summary')">📋 전체 요약</button>
+      <button class="result-tab"        id="rt-orig"    onclick="showResultTab('orig')">📄 원문 주요 고시</button>
+      <button class="result-tab"        id="rt-new"     onclick="showResultTab('new')">🆕 신설 사항</button>
+      <button class="result-tab"        id="rt-changed" onclick="showResultTab('changed')">🔄 변경 사항</button>
+      <button class="result-tab"        id="rt-all"     onclick="showResultTab('all')">전체 보기</button>
+    </div>
+    <div class="result-section active" id="rs-summary"></div>
+    <div class="result-section"        id="rs-orig"></div>
+    <div class="result-section"        id="rs-new"></div>
+    <div class="result-section"        id="rs-changed"></div>
+    <div class="result-section"        id="rs-all"></div>
+    <div class="result-dl-bar">
+      <button class="btn btn-primary" onclick="downloadUploadResult()" style="font-size:0.8rem;padding:5px 14px">📥 분석 결과 다운로드</button>
+    </div>
+  </div>
+</div>
+</div><!-- /tab-analyze-panel -->
 
 <!-- ── 상세 팝업 모달 ── -->
 <div class="modal-bg" id="modal-bg" onclick="onModalBgClick(event)">
@@ -434,9 +652,18 @@
 
 <script>
 let currentPage = 1;
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 30;
 let summaryFilter = '';  // '' | 'true' | 'false'
 let currentNoticeId = null;
+
+// 기본 검색 기간: from = 오늘-7일, to = 오늘
+(function() {
+  const today = new Date();
+  const from  = new Date(today);
+  from.setDate(from.getDate() - 7);
+  document.getElementById('filter-from').value = from.toISOString().slice(0, 10);
+  document.getElementById('filter-to').value   = today.toISOString().slice(0, 10);
+})();
 
 const STATUS_LABELS = { pending:'대기', reviewing:'검토중', applied:'적용완료', na:'해당없음' };
 const PRIORITY_LABELS = { urgent:'긴급', normal:'보통', low:'낮음' };
@@ -483,13 +710,17 @@ function setSummaryFilter(val) {
 async function loadPage(page) {
   currentPage = page;
   const source    = document.getElementById('filter-source').value;
-  const fromDate  = document.getElementById('filter-date').value;
+  const category  = document.getElementById('filter-category').value;
+  const fromDate  = document.getElementById('filter-from').value;
+  const toDate    = document.getElementById('filter-to').value;
   const keyword   = document.getElementById('filter-keyword').value.trim();
   const vStatus   = document.getElementById('filter-vstatus').value;
   const vPriority = document.getElementById('filter-vpriority').value;
 
   const params = new URLSearchParams({page, page_size: PAGE_SIZE, from_date: fromDate});
+  if (toDate)    params.set('to_date', toDate);
   if (source)    params.set('source', source);
+  if (category)  params.set('category', category);
   if (summaryFilter) params.set('has_summary', summaryFilter);
   if (vStatus)   params.set('v_status', vStatus);
   if (vPriority) params.set('v_priority', vPriority);
@@ -520,7 +751,7 @@ async function loadPage(page) {
           <td><span class="tag tag-${n.source}">${n.source==='mohw'?'복지부':'심평원'}</span></td>
           <td><span class="tag tag-cat">${esc(n.category||'-')}</span></td>
           <td>${esc(n.title)}</td>
-          <td>${n.posted_date}</td>
+          <td class="col-date">${n.posted_date}</td>
           <td class="${n.summary?'has-sum':'no-sum'}">${n.summary?'✔':'-'}</td>
           <td><span class="v-tag v-${vstatus}">${STATUS_LABELS[vstatus]||vstatus}</span></td>
           <td><span class="v-tag v-${vpriority}">${PRIORITY_LABELS[vpriority]||vpriority}</span></td>
@@ -539,10 +770,27 @@ async function loadPage(page) {
 function renderPagination(page, pages) {
   const pg = document.getElementById('pagination');
   if (pages <= 1) { pg.innerHTML = ''; return; }
-  pg.innerHTML =
-    `<button onclick="loadPage(${page-1})" ${page<=1?'disabled':''}>◀ 이전</button>` +
-    `<span class="pg-info">${page} / ${pages}</span>` +
-    `<button onclick="loadPage(${page+1})" ${page>=pages?'disabled':''}>다음 ▶</button>`;
+
+  const WINDOW = 5; // 앞뒤 표시할 페이지 수
+  let start = Math.max(1, page - Math.floor(WINDOW/2));
+  let end   = Math.min(pages, start + WINDOW - 1);
+  if (end - start < WINDOW - 1) start = Math.max(1, end - WINDOW + 1);
+
+  let html = `<button onclick="loadPage(${page-1})" ${page<=1?'disabled':''}>◀</button>`;
+  if (start > 1) {
+    html += `<button onclick="loadPage(1)">1</button>`;
+    if (start > 2) html += `<span class="pg-info">…</span>`;
+  }
+  for (let p = start; p <= end; p++) {
+    html += `<button onclick="loadPage(${p})" class="${p===page?'active':''}">${p}</button>`;
+  }
+  if (end < pages) {
+    if (end < pages - 1) html += `<span class="pg-info">…</span>`;
+    html += `<button onclick="loadPage(${pages})">${pages}</button>`;
+  }
+  html += `<button onclick="loadPage(${page+1})" ${page>=pages?'disabled':''}>▶</button>`;
+  html += `<span class="pg-info">${page} / ${pages} 페이지</span>`;
+  pg.innerHTML = html;
 }
 
 // ── 모달 팝업 ──────────────────────────────────────────────
@@ -580,14 +828,23 @@ function renderModal(n) {
     const isEmr = n.summary.includes('EMR') || n.summary.includes('모듈') || n.summary.includes('청구');
     summaryHtml = `
       <div>
-        <div class="section-divider">■ 요약 분석 (의사랑 EMR 적용 관점)</div>
-        <div class="summary-card ${isEmr?'emr':''}">${esc(n.summary)}</div>
+        <div class="section-divider" style="display:flex;align-items:center;justify-content:space-between">
+          <span>■ AI 분석 결과 (변경사항 / EMR 적용 관점)</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-warn" style="font-size:0.75rem;padding:3px 10px" id="btn-ai-analyze" onclick="runNoticeSummarize(${n.id})">재분석</button>
+            <button class="btn btn-primary" style="font-size:0.75rem;padding:3px 10px" onclick="downloadAnalysis(${JSON.stringify(n).replace(/"/g,'&quot;')})">📥 다운로드</button>
+          </div>
+        </div>
+        <div class="summary-card ${isEmr?'emr':''}" id="summary-card">${esc(n.summary)}</div>
       </div>`;
   } else {
     summaryHtml = `
       <div>
-        <div class="section-divider">■ 요약 분석</div>
-        <span class="no-sum-msg">요약 없음 — [요약 실행] 버튼을 눌러 생성하세요</span>
+        <div class="section-divider">■ AI 분석</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0">
+          <span class="no-sum-msg" id="no-sum-msg">분석 전 — PDF 첨부파일 기준으로 이전 고시 대비 변경사항을 분석합니다</span>
+          <button class="btn btn-warn" style="white-space:nowrap" id="btn-ai-analyze" onclick="runNoticeSummarize(${n.id})">AI 분석</button>
+        </div>
       </div>`;
   }
 
@@ -631,13 +888,49 @@ function renderModal(n) {
 
   // 첨부파일
   const atts = n.attachments || [];
-  const attHtml = atts.length ? `
+  let attHtml = '';
+  if (atts.length) {
+    attHtml = `
     <div class="attach-section">
       <h4>■ 첨부파일</h4>
       <ul class="attach-list">
-        ${atts.map(a => `<li><a href="${a.download_url}" target="_blank">📎 ${esc(a.filename)}</a></li>`).join('')}
+        ${atts.map(a => {
+          const isPdf = a.file_type === 'pdf';
+          const analyzeBtn = isPdf
+            ? `<button class="btn-att-analyze" onclick="runNoticeSummarize(${n.id}, ${a.id})">분석</button>`
+            : '';
+          return `<li><a href="${a.download_url}" target="_blank">📎 ${esc(a.filename)}</a>${analyzeBtn}</li>`;
+        }).join('')}
       </ul>
-    </div>` : '';
+    </div>`;
+  } else if (n.source === 'hira') {
+    if (n.mohw_match) {
+      // 복지부 매칭 고시의 첨부파일 사용
+      const m = n.mohw_match;
+      const mAtts = (m.attachments || []).map(a => {
+        const analyzeBtn = `<button class="btn-att-analyze" onclick="runNoticeSummarize(${n.id}, ${a.id}, ${m.id})">분석</button>`;
+        return `<li><a href="${a.download_url}" target="_blank">📎 ${esc(a.filename)}</a>${analyzeBtn}
+         ${a.local_path ? '<span style="color:var(--green);font-size:0.75rem"> ✔ 저장됨</span>' : ''}</li>`;
+      }).join('');
+      attHtml = `
+      <div class="attach-section">
+        <h4>■ 첨부파일 <span style="font-size:0.75rem;color:var(--orange);font-weight:400">(복지부 연계: ${esc(m.issued_no||m.title?.slice(0,30))})</span></h4>
+        <ul class="attach-list">${mAtts || '<li style="color:var(--gray)">복지부 PDF 없음</li>'}</ul>
+        <div style="font-size:0.75rem;color:var(--gray);margin-top:4px">
+          <a href="${m.detail_url}" target="_blank">🔗 복지부 원문 보기 ↗</a>
+        </div>
+      </div>`;
+    } else {
+      attHtml = `
+      <div class="attach-section">
+        <h4>■ 첨부파일</h4>
+        <div style="font-size:0.83rem;color:var(--gray);padding:8px 0">
+          심사평가원 InfoBank 전용 시스템으로 파일 자동 수집이 불가합니다.<br>
+          <a href="https://biz.hira.or.kr" target="_blank" style="color:var(--blue);font-weight:600">🔗 HIRA 비즈 사이트 접속 후 InfoBank 메뉴에서 확인 ↗</a>
+        </div>
+      </div>`;
+    }
+  }
 
   document.getElementById('m-body').innerHTML = summaryHtml + verifyHtml + attHtml;
 }
@@ -749,11 +1042,81 @@ document.addEventListener('click', e => {
   }
 });
 
+// ── 분석 결과 다운로드 ──────────────────────────────────────
+function downloadAnalysis(n) {
+  const srcName = n.source === 'mohw' ? '보건복지부' : '건강보험심사평가원';
+  const title = (n.title || '').replace(/^새글/, '').trim();
+  const lines = [
+    '═'.repeat(60),
+    '고시 AI 분석 보고서 (의사랑 EMR 적용 관점)',
+    '═'.repeat(60),
+    '',
+    `제목: ${title}`,
+    `출처: ${srcName}`,
+    `구분: ${n.category || '-'}`,
+    `등록일: ${n.posted_date || '-'}`,
+    `고시번호: ${n.issued_no || '-'}`,
+    '',
+    '─'.repeat(60),
+    'AI 분석 결과',
+    '─'.repeat(60),
+    '',
+    n.summary || '(분석 결과 없음)',
+    '',
+    '─'.repeat(60),
+    `생성일시: ${new Date().toLocaleString('ko-KR')}`,
+    '생성도구: 고시 통합 분석 시스템 — 의사랑 EMR',
+  ];
+  const blob = new Blob([lines.join('\n')], {type: 'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeTitle = title.replace(/[\\/:*?"<>|]/g, '_').slice(0, 50);
+  a.download = `고시분석_${n.posted_date || ''}_${safeTitle}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── 개별 고시 AI 분석 (선택 첨부파일 기준) ──────────────────
+// attId: 분석할 첨부파일 ID (없으면 첫 번째 PDF), srcNoticeId: HIRA→복지부 매칭 시 복지부 notice id
+async function runNoticeSummarize(id, attId, srcNoticeId) {
+  // 클릭된 분석 버튼 비활성화
+  event && event.target && (event.target.disabled = true, event.target.textContent = '분석 중...');
+  const mainBtn = document.getElementById('btn-ai-analyze');
+  if (mainBtn) { mainBtn.disabled = true; mainBtn.textContent = '분석 중...'; }
+  setStatus('AI 분석 중... (이전 고시 비교 포함, 잠시 기다려주세요)', 'loading');
+
+  try {
+    const body = {};
+    if (attId)      body.att_id      = attId;
+    if (srcNoticeId) body.src_notice_id = srcNoticeId;
+
+    const res = await fetch(`/api/notices/${id}/summarize`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.error) {
+      setStatus('분석 실패: ' + data.error, 'error');
+      if (mainBtn) { mainBtn.disabled = false; mainBtn.textContent = 'AI 분석'; }
+      return;
+    }
+    setStatus('AI 분석 완료');
+    const res2 = await fetch('/api/notices/' + id);
+    const n = await res2.json();
+    renderModal(n);
+    loadPage(currentPage);
+  } catch(e) {
+    setStatus('AI 분석 요청 실패', 'error');
+    if (mainBtn) { mainBtn.disabled = false; mainBtn.textContent = 'AI 분석'; }
+  }
+}
+
 // ── 크롤링/요약 실행 ──────────────────────────────────────
 async function runTask(task) {
   const label = task === 'crawl' ? '크롤링' : 'AI 요약';
   document.getElementById('btn-crawl').disabled = true;
-  document.getElementById('btn-summarize').disabled = true;
   setStatus(`${label} 실행 중... (잠시 기다려주세요)`, 'loading');
 
   try {
@@ -772,8 +1135,304 @@ async function runTask(task) {
     setStatus(`${label} 요청 실패`, 'error');
   } finally {
     document.getElementById('btn-crawl').disabled = false;
-    document.getElementById('btn-summarize').disabled = false;
   }
+}
+
+// ── 파일 비교 분석 탭 ────────────────────────────────────────
+let uploadFiles = { new: [], prev: [] };
+let selectedPrevNoticeId = null;
+let uploadResult = '';
+let prevNoticesCache = [];
+let prevSearchTimeout = null;
+
+function showTab(name) {
+  document.getElementById('tab-list-panel').style.display    = name === 'list'    ? '' : 'none';
+  document.getElementById('tab-analyze-panel').style.display = name === 'analyze' ? '' : 'none';
+  document.getElementById('tab-btn-list').classList.toggle('active',    name === 'list');
+  document.getElementById('tab-btn-analyze').classList.toggle('active', name === 'analyze');
+}
+
+function dzDrag(e, key) {
+  e.preventDefault();
+  document.getElementById('dz-' + key).classList.add('dragover');
+}
+function dzLeave(key) {
+  document.getElementById('dz-' + key).classList.remove('dragover');
+}
+function dzDrop(e, key) {
+  e.preventDefault();
+  dzLeave(key);
+  _addUploadFiles(key, Array.from(e.dataTransfer.files));
+}
+function dzFileSelect(e, key) {
+  _addUploadFiles(key, Array.from(e.target.files));
+  e.target.value = '';  // 같은 파일 재선택 가능
+}
+function _addUploadFiles(key, files) {
+  const allowed = ['pdf', 'hwpx'];
+  for (const f of files) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    if (allowed.includes(ext)) uploadFiles[key].push(f);
+  }
+  _renderFileList(key);
+}
+function _renderFileList(key) {
+  const listEl = document.getElementById('dz-' + key + '-list');
+  if (!listEl) return;
+  if (!uploadFiles[key].length) { listEl.innerHTML = ''; return; }
+  listEl.innerHTML = uploadFiles[key].map((f, i) => `
+    <div class="dz-file-item">
+      <span class="fi-name">📎 ${esc(f.name)}</span>
+      <button class="fi-remove" onclick="event.stopPropagation();dzRemoveFile('${key}',${i})">✕</button>
+    </div>`).join('');
+}
+function dzRemoveFile(key, idx) {
+  uploadFiles[key].splice(idx, 1);
+  _renderFileList(key);
+}
+function dzClear(key) {
+  uploadFiles[key] = [];
+  _renderFileList(key);
+  const fi = document.getElementById('fi-' + key);
+  if (fi) fi.value = '';
+}
+
+// prevWebSelected: { download_url, filename, title, posted_date }
+let prevWebSelected = null;
+
+function setPrevMode(mode) {
+  const isWeb = mode === 'web';
+  document.getElementById('prev-web-area').style.display  = isWeb ? '' : 'none';
+  document.getElementById('prev-file-area').style.display = isWeb ? 'none' : '';
+  document.getElementById('pm-web').style.background  = isWeb ? '#e8f0fe' : '#f5f5f5';
+  document.getElementById('pm-web').style.color       = isWeb ? 'var(--blue)' : 'var(--gray)';
+  document.getElementById('pm-file').style.background = isWeb ? '#f5f5f5' : '#e8f0fe';
+  document.getElementById('pm-file').style.color      = isWeb ? 'var(--gray)' : 'var(--blue)';
+  if (!isWeb) {
+    prevWebSelected = null;
+    document.getElementById('prev-selected-info').style.display = 'none';
+  }
+}
+
+async function searchPrevWeb() {
+  const kw   = document.getElementById('prev-keyword').value.trim();
+  const list = document.getElementById('prev-notice-list');
+  if (!kw) { list.innerHTML = '<div style="padding:12px;color:var(--gray);font-size:0.8rem;text-align:center">키워드를 입력하세요</div>'; return; }
+
+  list.innerHTML = '<div style="padding:16px;color:var(--gray);font-size:0.8rem;text-align:center">🔍 복지부 사이트 검색 중... (수 초 소요)</div>';
+  prevWebSelected = null;
+  document.getElementById('prev-selected-info').style.display = 'none';
+
+  try {
+    const res  = await fetch('/api/web-search?' + new URLSearchParams({ keyword: kw }));
+    const data = await res.json();
+    if (data.error) { list.innerHTML = `<div style="padding:12px;color:red;font-size:0.8rem">오류: ${esc(data.error)}</div>`; return; }
+    const results = data.results || [];
+    prevNoticesCache = results;
+
+    if (!results.length) {
+      list.innerHTML = `<div style="padding:16px;color:var(--gray);font-size:0.8rem;text-align:center">"${esc(kw)}" 검색 결과 없음</div>`;
+      return;
+    }
+
+    list.innerHTML = results.map((n, idx) => {
+      const pdfs = (n.attachments || []).filter(a => a.file_type === 'pdf');
+      const pdfBtns = pdfs.map((a, ai) =>
+        `<button onclick="selectPrevWebFile(${idx},${ai})" style="margin:2px 4px 2px 0;padding:2px 8px;font-size:0.75rem;border:1px solid var(--blue);background:#f0f5ff;color:var(--blue);border-radius:3px;cursor:pointer;font-family:inherit">
+          📎 ${esc(a.filename.slice(0, 30))}
+        </button>`).join('');
+      return `<div class="prev-notice-item" data-idx="${idx}">
+        <div style="font-size:0.82rem;font-weight:600">${esc(n.title)}</div>
+        <div class="pni-date" style="margin:3px 0">${esc(n.category||'')} · ${n.posted_date} · <a href="${n.detail_url}" target="_blank" style="color:var(--blue)">원문 ↗</a></div>
+        <div>${pdfs.length ? pdfBtns : '<span style="font-size:0.75rem;color:#aaa">PDF 없음</span>'}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="padding:12px;color:red;font-size:0.8rem">검색 실패: ${esc(e.message)}</div>`;
+  }
+}
+
+function selectPrevWebFile(noticeIdx, attIdx) {
+  const notice = prevNoticesCache[noticeIdx];
+  if (!notice) return;
+  const pdfs = (notice.attachments || []).filter(a => a.file_type === 'pdf');
+  const att  = pdfs[attIdx];
+  if (!att) return;
+  prevWebSelected = {
+    download_url: att.download_url,
+    filename:     att.filename,
+    title:        notice.title,
+    posted_date:  notice.posted_date,
+  };
+  // 선택 강조
+  document.querySelectorAll('#prev-notice-list .prev-notice-item').forEach(el => el.classList.remove('selected'));
+  const card = document.querySelector(`#prev-notice-list .prev-notice-item[data-idx="${noticeIdx}"]`);
+  if (card) card.classList.add('selected');
+  const info = document.getElementById('prev-selected-info');
+  info.style.display = 'block';
+  info.textContent = `✔ 선택됨: ${notice.title.slice(0,40)}… · ${att.filename}`;
+}
+
+async function runUploadAnalyze() {
+  if (!uploadFiles.new.length) { alert('분석할 파일을 선택해주세요'); return; }
+
+  const btn = document.getElementById('btn-upload-analyze');
+  const spinner = document.getElementById('upload-spinner');
+  const statusEl = document.getElementById('upload-status');
+
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  statusEl.textContent = `AI 분석 중... (신규 ${uploadFiles.new.length}개 파일, 잠시 기다려주세요)`;
+
+  const fd = new FormData();
+  uploadFiles.new.forEach(f => fd.append('file', f));
+  const title = document.getElementById('up-title').value.trim() || uploadFiles.new.map(f => f.name).join(', ');
+  fd.append('title', title);
+
+  const isWebMode = document.getElementById('prev-web-area').style.display !== 'none';
+  if (isWebMode && prevWebSelected) {
+    fd.append('prev_web_url',  prevWebSelected.download_url);
+    fd.append('prev_web_name', prevWebSelected.filename);
+  } else if (!isWebMode && uploadFiles.prev.length) {
+    uploadFiles.prev.forEach(f => fd.append('prev_file', f));
+  }
+
+  try {
+    const res = await fetch('/api/analyze-upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) { statusEl.textContent = '오류: ' + data.error; return; }
+    uploadResult = data.result || '';
+    const prevInfo = data.prev_info || {};
+    let statusMsg = '';
+    if (prevInfo.title) {
+      const autoTag = data.auto_searched ? ' 🤖 자동검색' : '';
+      statusMsg = `분석 완료${autoTag} · 비교 대상: ${prevInfo.title.slice(0,35)}… (${prevInfo.posted_date||''})`;
+    } else {
+      statusMsg = '분석 완료 (비교할 이전 고시를 찾지 못했습니다 — 신규 고시 단독 분석)';
+    }
+    statusEl.textContent = statusMsg;
+    _renderUploadResult(uploadResult);
+  } catch(e) {
+    statusEl.textContent = '요청 실패: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+async function runEmrOnlyAnalyze() {
+  if (!uploadFiles.new.length) { alert('분석할 파일을 선택해주세요'); return; }
+
+  const btn = document.getElementById('btn-emr-only');
+  const spinner = document.getElementById('upload-spinner');
+  const statusEl = document.getElementById('upload-status');
+
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  statusEl.textContent = `EMR 적용 사항 분석 중... (${uploadFiles.new.length}개 파일)`;
+
+  const fd = new FormData();
+  uploadFiles.new.forEach(f => fd.append('file', f));
+  const title = document.getElementById('up-title').value.trim() || uploadFiles.new.map(f => f.name).join(', ');
+  fd.append('title', title);
+
+  try {
+    const res = await fetch('/api/analyze-emr-only', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.error) { statusEl.textContent = '오류: ' + data.error; return; }
+    uploadResult = data.result || '';
+    statusEl.textContent = 'EMR 적용 분석 완료';
+    _renderUploadResult(uploadResult);
+  } catch(e) {
+    statusEl.textContent = '요청 실패: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+  }
+}
+
+function _renderUploadResult(text) {
+  document.getElementById('result-panel').style.display = '';
+  const secs = _parseResultSections(text);
+  document.getElementById('rs-summary').innerHTML = _fmtResultHtml(secs.summary || text);
+  document.getElementById('rs-orig').innerHTML    = _fmtResultHtml(secs.orig    || '(원문 분석 내용 없음)');
+  document.getElementById('rs-new').innerHTML     = _fmtResultHtml(secs.new     || '(신설 사항 없음)');
+  document.getElementById('rs-changed').innerHTML = _fmtResultHtml(secs.changed || '(변경 사항 없음)');
+  document.getElementById('rs-all').innerHTML     = _fmtResultHtml(text);
+  showResultTab('summary');
+}
+
+function _parseResultSections(text) {
+  const sumPat  = /^#{1,3}[^\n]*(섹션\s*1|전체\s*요약|요약)/im;
+  const newPat  = /^#{1,3}[^\n]*(섹션\s*2|신설)/im;
+  const chgPat  = /^#{1,3}[^\n]*(섹션\s*3|변경)/im;
+  const origPat = /^#{1,3}[^\n]*(섹션\s*4|원문\s*주요)/im;
+
+  const lines = text.split('\n');
+  let cur = 'summary';
+  const parts = { summary: [], new: [], changed: [], orig: [] };
+
+  for (const line of lines) {
+    if (sumPat.test(line))  { cur = 'summary'; continue; }
+    if (newPat.test(line))  { cur = 'new';     continue; }
+    if (chgPat.test(line))  { cur = 'changed'; continue; }
+    if (origPat.test(line)) { cur = 'orig';    continue; }
+    parts[cur].push(line);
+  }
+  return {
+    summary: parts.summary.join('\n').trim(),
+    new:     parts.new.join('\n').trim(),
+    changed: parts.changed.join('\n').trim(),
+    orig:    parts.orig.join('\n').trim(),
+  };
+}
+
+function _fmtResultHtml(text) {
+  if (!text) return '<div class="result-empty">내용 없음</div>';
+  // escape
+  let t = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // 마크다운 테이블 렌더링
+  t = t.replace(/(?:^|\n)((?:\|[^\n]+\|\n?)+)/g, (_, block) => {
+    const rows = block.trim().split('\n').filter(r => r.trim());
+    if (rows.length < 2) return '\n' + block;
+    let html = '<table class="result-table"><thead>';
+    rows.forEach((row, i) => {
+      if (i === 1 && /^\s*\|[\s\-|]+\|\s*$/.test(row)) { html += '</thead><tbody>'; return; }
+      const cells = row.split('|').filter((_, ci) => ci > 0 && ci < row.split('|').length - 1);
+      const tag = i === 0 ? 'th' : 'td';
+      html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    });
+    html += '</tbody></table>';
+    return '\n' + html;
+  });
+
+  t = t
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^#{1,3}\s+(.+)$/gm, '<h3>$1</h3>')
+    .replace(/^---$/gm, '<hr>')
+    .replace(/\n/g,'<br>');
+  return t;
+}
+
+function showResultTab(name) {
+  ['summary','orig','new','changed','all'].forEach(n => {
+    document.getElementById('rt-' + n)?.classList.toggle('active', n === name);
+    document.getElementById('rs-' + n)?.classList.toggle('active', n === name);
+  });
+}
+
+function downloadUploadResult() {
+  if (!uploadResult) return;
+  const title = (document.getElementById('up-title').value.trim() || '파일비교분석')
+    .replace(/[\\/:*?"<>|]/g,'_').slice(0,50);
+  const blob = new Blob([uploadResult], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `비교분석_${new Date().toISOString().slice(0,10)}_${title}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── 유틸 ──────────────────────────────────────────────────

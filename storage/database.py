@@ -129,15 +129,24 @@ def update_summary(notice_db_id: int, summary: str) -> None:
         conn.execute("UPDATE notices SET summary=? WHERE id=?", (summary, notice_db_id))
 
 
-def count_notices(source=None, from_date='2026-03-01', has_summary=None,
-                  v_status=None, v_priority=None):
+def count_notices(source=None, from_date='2026-03-01', to_date=None, has_summary=None,
+                  v_status=None, v_priority=None, category=None, keyword=None):
     sql = """SELECT COUNT(*) FROM notices n
              LEFT JOIN verifications v ON v.notice_id = n.id
              WHERE n.posted_date >= ?"""
     params = [from_date]
+    if to_date:
+        sql += " AND n.posted_date <= ?"
+        params.append(to_date)
     if source:
         sql += " AND n.source=?"
         params.append(source)
+    if category:
+        sql += " AND n.category=?"
+        params.append(category)
+    if keyword:
+        sql += " AND n.title LIKE ?"
+        params.append(f'%{keyword}%')
     if has_summary is True:
         sql += " AND n.summary IS NOT NULL"
     elif has_summary is False:
@@ -155,16 +164,25 @@ def count_notices(source=None, from_date='2026-03-01', has_summary=None,
         return conn.execute(sql, params).fetchone()[0]
 
 
-def get_notices(source=None, from_date='2026-03-01', limit=50, offset=0,
-                has_summary=None, v_status=None, v_priority=None):
+def get_notices(source=None, from_date='2026-03-01', to_date=None, limit=50, offset=0,
+                has_summary=None, v_status=None, v_priority=None, category=None, keyword=None):
     sql = """SELECT n.*, v.status AS v_status, v.priority AS v_priority
              FROM notices n
              LEFT JOIN verifications v ON v.notice_id = n.id
              WHERE n.posted_date >= ?"""
     params = [from_date]
+    if to_date:
+        sql += " AND n.posted_date <= ?"
+        params.append(to_date)
     if source:
         sql += " AND n.source=?"
         params.append(source)
+    if category:
+        sql += " AND n.category=?"
+        params.append(category)
+    if keyword:
+        sql += " AND n.title LIKE ?"
+        params.append(f'%{keyword}%')
     if has_summary is True:
         sql += " AND n.summary IS NOT NULL"
     elif has_summary is False:
@@ -257,6 +275,52 @@ def get_verification_with_modules(notice_db_id: int) -> dict:
             modules[c['module_name']] = bool(c['is_checked'])
         v['modules'] = modules
         return v
+
+
+def get_prev_notice_attachment(source: str, posted_date: str, current_id: int) -> Optional[dict]:
+    """같은 출처의 직전 고시 첨부파일 정보 반환 (local_path 있는 것 우선)"""
+    with get_conn() as conn:
+        row = conn.execute("""
+            SELECT a.id, a.local_path, a.download_url, a.filename, a.file_type
+            FROM notices n
+            JOIN attachments a ON a.notice_id = n.id
+            WHERE n.source = ? AND n.posted_date < ? AND n.id != ?
+              AND a.file_type = 'pdf'
+            ORDER BY n.posted_date DESC,
+                     CASE WHEN a.local_path IS NOT NULL THEN 0 ELSE 1 END,
+                     CASE WHEN a.file_type='pdf' THEN 0 ELSE 1 END
+            LIMIT 1
+        """, (source, posted_date, current_id)).fetchone()
+        return dict(row) if row else None
+
+
+def find_mohw_notice_by_issued_no(issued_no: str) -> Optional[dict]:
+    """고시 번호로 복지부 고시 및 첨부파일 검색 (HIRA 공지 크로스 매칭용)."""
+    if not issued_no:
+        return None
+    with get_conn() as conn:
+        row = conn.execute(
+            "SELECT * FROM notices WHERE source='mohw' AND issued_no LIKE ? LIMIT 1",
+            (f'%{issued_no}%',)
+        ).fetchone()
+        if not row:
+            return None
+        notice = dict(row)
+        atts = [dict(r) for r in conn.execute(
+            "SELECT * FROM attachments WHERE notice_id=? AND file_type='pdf'",
+            (notice['id'],)
+        ).fetchall()]
+        notice['attachments'] = atts
+        return notice
+
+
+def get_existing_notice_ids(source: str) -> set:
+    """특정 출처의 기존 notice_id 집합 반환 (크롤링 조기 중단용)."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT notice_id FROM notices WHERE source=?", (source,)
+        ).fetchall()
+    return {r['notice_id'] for r in rows}
 
 
 def get_dashboard_stats() -> dict:
