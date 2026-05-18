@@ -121,10 +121,37 @@ def run_summarize() -> None:
 
 def run_serve() -> None:
     import os
+    import socket
     from web.app import create_app
+
+    port = int(os.environ.get('PORT', 5001))
+
+    # 포트 사용 중이면 다음 포트로 자동 변경
+    for p in range(port, port + 10):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(('127.0.0.1', p)) != 0:
+                port = p
+                break
+    else:
+        print(f"[오류] {port}~{port+9} 포트가 모두 사용 중입니다.")
+        return
+
     app = create_app()
-    port = int(os.environ.get('PORT', 5000))
+    print(f"\n{'='*40}")
+    print(f"  서버 주소: http://localhost:{port}")
+    print(f"  네트워크:  http://{_get_local_ip()}:{port}")
+    print(f"{'='*40}\n")
     app.run(debug=False, host='0.0.0.0', port=port)
+
+
+def _get_local_ip() -> str:
+    import socket
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(('8.8.8.8', 80))
+            return s.getsockname()[0]
+    except Exception:
+        return '127.0.0.1'
 
 
 if __name__ == '__main__':
